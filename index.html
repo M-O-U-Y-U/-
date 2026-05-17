@@ -1,0 +1,199 @@
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AWAITING // 05.18</title>
+    <style>
+        /* ================= 基础设定 ================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; height: 100%; 
+            background-color: #050505; 
+            color: #fff; 
+            font-family: 'Courier New', Courier, monospace; 
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            overflow: hidden; 
+        }
+
+        /* ================= 星空背景特效 ================= */
+        .stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle infinite alternate; }
+        @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; transform: scale(1.2); } }
+
+        /* ================= 核心 UI 容器 ================= */
+        .container { position: relative; z-index: 10; text-align: center; width: 90%; max-width: 500px; }
+
+        /* ================= 雷达/信标 动画 ================= */
+        .radar-container { position: relative; width: 150px; height: 150px; margin: 0 auto 40px auto; display: flex; justify-content: center; align-items: center; }
+        .radar-core { width: 20px; height: 20px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 15px #00e5ff; z-index: 2; transition: all 1s ease; }
+        .radar-ripple { position: absolute; width: 100%; height: 100%; border: 2px solid #00e5ff; border-radius: 50%; opacity: 0; animation: radarPing 2.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
+        .radar-ripple:nth-child(2) { animation-delay: 0.8s; }
+        .radar-ripple:nth-child(3) { animation-delay: 1.6s; }
+        @keyframes radarPing { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+
+        /* 解锁后的爱心形态 */
+        .radar-container.unlocked .radar-core { background: transparent; box-shadow: none; width: auto; height: auto; font-size: 4rem; animation: heartbeat 1s infinite; text-shadow: 0 0 20px #ff00aa; color: #ff00aa; }
+        .radar-container.unlocked .radar-core::before { content: '❤'; }
+        .radar-container.unlocked .radar-ripple { border-color: #ff00aa; }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+        /* ================= 文本与倒计时 ================= */
+        .title { font-size: 1.2rem; letter-spacing: 4px; margin-bottom: 10px; color: rgba(255,255,255,0.6); }
+        
+        .countdown { font-size: 2.5rem; font-weight: bold; margin-bottom: 20px; color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); letter-spacing: 2px; }
+        .countdown span { font-size: 0.9rem; color: #888; text-shadow: none; letter-spacing: 0; margin-left: 2px; margin-right: 8px; }
+        
+        /* 动态情话打字机 */
+        .dynamic-text { height: 60px; font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.8); margin-bottom: 40px; font-style: italic; border-left: 2px solid #00e5ff; padding-left: 10px; text-align: left; }
+
+        /* ================= 跳转按钮 ================= */
+        .btn-gateway { display: inline-block; padding: 15px 35px; background: transparent; border: 1px solid #555; color: #555; text-decoration: none; font-weight: bold; letter-spacing: 2px; border-radius: 30px; transition: all 0.3s ease; pointer-events: none; cursor: not-allowed; text-transform: uppercase; }
+        
+        /* 解锁后的按钮形态 */
+        .btn-gateway.unlocked { border: 1px solid #ff00aa; color: #fff; background: rgba(255, 0, 170, 0.1); box-shadow: 0 0 15px rgba(255, 0, 170, 0.4); pointer-events: auto; cursor: pointer; }
+        .btn-gateway.unlocked:hover { background: #ff00aa; box-shadow: 0 0 25px #ff00aa; transform: scale(1.05); }
+
+    </style>
+</head>
+<body>
+
+    <!-- 背景星空 -->
+    <div class="stars" id="stars"></div>
+
+    <div class="container">
+        
+        <!-- 信标动画 -->
+        <div class="radar-container" id="radar">
+            <div class="radar-core"></div>
+            <div class="radar-ripple"></div>
+            <div class="radar-ripple"></div>
+            <div class="radar-ripple"></div>
+        </div>
+
+        <div class="title" id="main-title">SIGNAL_INTERCEPTED</div>
+        
+        <!-- 倒计时显示 -->
+        <div class="countdown" id="countdown-timer">
+            --<span>D</span>--<span>H</span>--<span>M</span>--<span>S</span>
+        </div>
+
+        <!-- 随机浮现的情话/线索 -->
+        <div class="dynamic-text" id="dynamic-text">
+            > 正在初始化...
+        </div>
+
+        <!-- 通往主系统的传送门 -->
+        <a href="https://for-qiao.pages.dev" class="btn-gateway" id="btn-gateway">
+            [ 权限锁定 | AWAITING 05.18 ]
+        </a>
+
+    </div>
+
+    <script>
+        // ================= 1. 星空背景生成 =================
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 80; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = Math.random() * 3 + 'px';
+            star.style.height = star.style.width;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDuration = (Math.random() * 3 + 1) + 's';
+            star.style.animationDelay = (Math.random() * 2) + 's';
+            starsContainer.appendChild(star);
+        }
+
+        // ================= 2. 浪漫文案轮播引擎 =================
+        const messages = [
+            "> 正在捕获来自 1800 公里外的特殊频段...",
+            "> 光穿过 1800 公里只需 0.006 秒，而这份礼物需要时间的沉淀。",
+            "> 目标确认：郑巧。正在进行安全加密验证...",
+            "> 距离 Qiao_OS 系统核心解密，还需要一点点耐心。",
+            "> 所有的浪漫，都在向着 5 月 18 日的零点汇聚。"
+        ];
+        const textElement = document.getElementById('dynamic-text');
+        let msgIndex = 0;
+
+        function changeMessage() {
+            // 如果已经解锁，停止轮播
+            if(isUnlocked) return;
+            textElement.style.opacity = 0;
+            setTimeout(() => {
+                textElement.innerText = messages[msgIndex];
+                textElement.style.opacity = 1;
+                msgIndex = (msgIndex + 1) % messages.length;
+            }, 500); // 配合 CSS 可以做淡入淡出，这里用简单的替换
+        }
+        setInterval(changeMessage, 4500);
+        changeMessage();
+
+        // ================= 3. 核心倒计时与解锁逻辑 =================
+        // 设定解锁目标时间：2026年5月18日 00:00:00
+        const TARGET_DATE = new Date('2026-05-18T00:00:00').getTime();
+        
+        const countdownEl = document.getElementById('countdown-timer');
+        const btnGateway = document.getElementById('btn-gateway');
+        const radar = document.getElementById('radar');
+        const mainTitle = document.getElementById('main-title');
+        
+        let isUnlocked = false;
+
+        function formatNumber(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = TARGET_DATE - now;
+
+            if (distance > 0) {
+                // 时间未到，计算时分秒
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownEl.innerHTML = `
+                    ${formatNumber(days)}<span>D</span>
+                    ${formatNumber(hours)}<span>H</span>
+                    ${formatNumber(minutes)}<span>M</span>
+                    ${formatNumber(seconds)}<span>S</span>
+                `;
+            } else {
+                // 时间已到，触发解锁状态！
+                if(!isUnlocked) {
+                    isUnlocked = true;
+                    
+                    // UI 状态大逆转
+                    countdownEl.innerHTML = "00<span>D</span>00<span>H</span>00<span>M</span>00<span>S</span>";
+                    countdownEl.style.color = "#ff00aa";
+                    countdownEl.style.textShadow = "0 0 15px rgba(255, 0, 170, 0.6)";
+                    
+                    mainTitle.innerText = "DECRYPTION_SUCCESS";
+                    mainTitle.style.color = "#ff00aa";
+                    
+                    textElement.innerHTML = "> 信号解析完成。<br>> 郑巧，生日快乐。系统大门已为你敞开。";
+                    textElement.style.borderLeftColor = "#ff00aa";
+                    
+                    radar.classList.add('unlocked');
+                    
+                    btnGateway.innerText = "[ 接入 Qiao_OS 核心网络 ]";
+                    btnGateway.classList.add('unlocked');
+                }
+            }
+        }
+
+        // 每秒刷新倒计时
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+
+    </script>
+</body>
+</html>
+
+
+```
