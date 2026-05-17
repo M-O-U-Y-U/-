@@ -1,216 +1,422 @@
-```html
+```slides
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AWAITING // 05.18</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TARGET:郑巧 // OS SIMULATION</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* ================= 基础设定 ================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body, html { 
-            width: 100%; height: 100%; 
-            background-color: #050505; 
-            color: #fff; 
-            font-family: 'Courier New', Courier, monospace; 
-            display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; 
-            overflow: hidden; 
+        /* 1. CORE SETUP */
+        * { box-sizing: border-box; cursor: none; }
+        body {
+            background-color: #000;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr;
+            margin: 0;
+            min-height: 100vh;
+            place-items: center;
+            overflow-x: hidden;
+            font-family: 'Urbanist', sans-serif;
         }
 
-        /* ================= 星空背景特效 ================= */
-        .stars { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle infinite alternate; }
-        @keyframes twinkle { 0% { opacity: 0.2; } 100% { opacity: 1; transform: scale(1.2); } }
+        .slide-container {
+            width: 1280px;
+            height: 720px;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-        /* ================= 核心 UI 容器 ================= */
-        .container { position: relative; z-index: 10; text-align: center; width: 90%; max-width: 500px; }
+        /* 2. CUSTOM UI ELEMENTS */
+        .typewriter-text {
+            font-family: 'Space Mono', monospace;
+            color: #fff;
+            font-size: 28px;
+            letter-spacing: 2px;
+            text-align: center;
+            max-width: 800px;
+            line-height: 1.6;
+        }
 
-        /* ================= 雷达/信标 动画 ================= */
-        .radar-container { position: relative; width: 150px; height: 150px; margin: 0 auto 40px auto; display: flex; justify-content: center; align-items: center; }
-        .radar-core { width: 20px; height: 20px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 15px #00e5ff; z-index: 2; transition: all 1s ease; }
-        .radar-ripple { position: absolute; width: 100%; height: 100%; border: 2px solid #00e5ff; border-radius: 50%; opacity: 0; animation: radarPing 2.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1); }
-        .radar-ripple:nth-child(2) { animation-delay: 0.8s; }
-        .radar-ripple:nth-child(3) { animation-delay: 1.6s; }
-        @keyframes radarPing { 0% { transform: scale(0.1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        .breathing-light {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #fff 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            animation: breathe 3s infinite ease-in-out;
+            cursor: pointer;
+            margin-top: 40px;
+        }
 
-        /* 解锁后的爱心形态 */
-        .radar-container.unlocked .radar-core { background: transparent; box-shadow: none; width: auto; height: auto; font-size: 4rem; animation: heartbeat 1s infinite; text-shadow: 0 0 20px #ff00aa; color: #ff00aa; }
-        .radar-container.unlocked .radar-core::before { content: '❤'; }
-        .radar-container.unlocked .radar-ripple { border-color: #ff00aa; }
-        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes breathe {
+            0%, 100% { transform: scale(0.8); opacity: 0.3; filter: blur(5px); }
+            50% { transform: scale(1.2); opacity: 1; filter: blur(0px); }
+        }
 
-        /* ================= 文本与倒计时 ================= */
-        .title { font-size: 1.2rem; letter-spacing: 4px; margin-bottom: 10px; color: rgba(255,255,255,0.6); }
+        /* 3. MOBILE OS SIMULATION STYLES */
+        .phone-mockup {
+            width: 320px;
+            height: 640px;
+            background: url('http://googleusercontent.com/image_collection/image_retrieval/12171466602651404739') center/cover;
+            border-radius: 40px;
+            border: 8px solid #1a1a1a;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 100px rgba(255,45,85,0.2);
+        }
+
+        .status-bar {
+            height: 30px;
+            width: 100%;
+            padding: 5px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-image: url('http://googleusercontent.com/image_collection/image_retrieval/10461366180072582671');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+        }
+
+        .lock-time {
+            font-size: 64px;
+            color: #fff;
+            font-weight: 300;
+            margin-top: 80px;
+            text-align: center;
+        }
+
+        .lock-date {
+            font-size: 18px;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .unlock-hint {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* 4. DESKTOP GRID */
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .app-icon-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .app-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-bottom: 5px;
+            transition: transform 0.2s;
+        }
+
+        .app-icon.blurred {
+            filter: blur(4px) grayscale(100%);
+            opacity: 0.6;
+        }
+
+        .app-name {
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: 0px;
+            background-color: #FF2D55;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            border: 1.5px solid #fff;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        /* 5. SLIDE SPECIFIC DECORATION */
+        .slide-title {
+            position: absolute;
+            top: 60px;
+            left: 60px;
+            font-size: 48px;
+            color: #fff;
+            font-weight: 500;
+            margin: 0;
+            z-index: 10;
+        }
+
+        .glow-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,45,85,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Chart/Table styles for later slides */
+        .table-layout table { width: 100%; border-collapse: collapse; }
+        .table-layout th { text-align: left; padding: 20px; color: #FF2D55; border-bottom: 1px solid #333; }
+        .table-layout td { padding: 20px; color: #fff; border-bottom: 1px solid #111; }
+
+        .highlight-number { font-size: 120px; color: #FF2D55; font-weight: 700; line-height: 1; }
         
-        .countdown { font-size: 2.5rem; font-weight: bold; margin-bottom: 20px; color: #00e5ff; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); letter-spacing: 2px; }
-        .countdown span { font-size: 0.9rem; color: #888; text-shadow: none; letter-spacing: 0; margin-left: 2px; margin-right: 8px; }
-        
-        /* 动态情话打字机 */
-        .dynamic-text { height: 60px; font-size: 0.9rem; line-height: 1.5; color: rgba(255,255,255,0.8); margin-bottom: 40px; font-style: italic; border-left: 2px solid #00e5ff; padding-left: 10px; text-align: left; }
-
-        /* ================= 跳转按钮 ================= */
-        .btn-gateway { display: inline-block; padding: 15px 35px; background: transparent; border: 1px solid #555; color: #555; text-decoration: none; font-weight: bold; letter-spacing: 2px; border-radius: 30px; transition: all 0.3s ease; pointer-events: none; cursor: not-allowed; text-transform: uppercase; }
-        
-        /* 解锁后的按钮形态 */
-        .btn-gateway.unlocked { border: 1px solid #ff00aa; color: #fff; background: rgba(255, 0, 170, 0.1); box-shadow: 0 0 15px rgba(255, 0, 170, 0.4); pointer-events: auto; cursor: pointer; }
-        .btn-gateway.unlocked:hover { background: #ff00aa; box-shadow: 0 0 25px #ff00aa; transform: scale(1.05); }
+        .timeline-line { height: 4px; background: #333; position: relative; width: 80%; margin: 50px 0; }
+        .timeline-dot { width: 20px; height: 20px; background: #FF2D55; border-radius: 50%; position: absolute; top: -8px; }
 
     </style>
 </head>
 <body>
 
-    <!-- 背景星空 -->
-    <div class="stars" id="stars"></div>
-
-    <div class="container">
-        
-        <!-- 信标动画 -->
-        <div class="radar-container" id="radar">
-            <div class="radar-core"></div>
-            <div class="radar-ripple"></div>
-            <div class="radar-ripple"></div>
-            <div class="radar-ripple"></div>
-        </div>
-
-        <div class="title" id="main-title">SIGNAL_INTERCEPTED</div>
-        
-        <!-- 倒计时显示 -->
-        <div class="countdown" id="countdown-timer">
-            --<span>D</span>--<span>H</span>--<span>M</span>--<span>S</span>
-        </div>
-
-        <!-- 随机浮现的情话/线索 -->
-        <div class="dynamic-text" id="dynamic-text">
-            > 正在与世界时间服务器进行高精度同步...
-        </div>
-
-        <!-- 通往主系统的传送门（填入你主站的真实链接） -->
-        <a href="https://for-qiao.pages.dev" class="btn-gateway" id="btn-gateway">
-            [ 权限锁定 | AWAITING 05.18 ]
-        </a>
-
+<div class="slide-container" id="slide1">
+    <div class="glow-overlay"></div>
+    <div class="typewriter-text" id="tw1">
+        你在互联网的角落里，捡到了一部手机……
     </div>
+</div>
 
-    <script>
-        // ================= 1. 星空背景生成 =================
-        const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 80; i++) {
-            let star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = Math.random() * 3 + 'px';
-            star.style.height = star.style.width;
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.animationDuration = (Math.random() * 3 + 1) + 's';
-            star.style.animationDelay = (Math.random() * 2) + 's';
-            starsContainer.appendChild(star);
-        }
+<div class="slide-container" id="slide2">
+    <div class="typewriter-text" id="tw2">
+        它跨越了 1800 公里，从河南焦作，流落到了广西北海。
+    </div>
+</div>
 
-        // ================= 2. 浪漫文案轮播引擎 =================
-        const messages = [
-            "> 正在捕获来自 1800 公里外的特殊频段...",
-            "> 光穿过 1800 公里只需 0.006 秒，而这份礼物需要时间的沉淀。",
-            "> 目标确认：郑巧。正在进行安全加密验证...",
-            "> 距离 Qiao_OS 系统核心解密，还需要一点点耐心。",
-            "> 所有的浪漫，都在向着 5 月 18 日的零点汇聚。"
-        ];
-        const textElement = document.getElementById('dynamic-text');
-        let msgIndex = 0;
-        let isUnlocked = false;
+<div class="slide-container" id="slide3">
+    <div class="typewriter-text">权限待触发...</div>
+    <div class="breathing-light"></div>
+</div>
 
-        function changeMessage() {
-            if(isUnlocked) return;
-            textElement.style.opacity = 0;
-            setTimeout(() => {
-                textElement.innerText = messages[msgIndex];
-                textElement.style.opacity = 1;
-                msgIndex = (msgIndex + 1) % messages.length;
-            }, 500); 
-        }
-        setInterval(changeMessage, 4500);
+<div class="slide-container" id="slide4" style="background: url('http://googleusercontent.com/image_collection/image_retrieval/12171466602651404739') center/cover;">
+    <div class="phone-mockup">
+        <div class="status-bar"></div>
+        <div class="lock-time">05:18</div>
+        <div class="lock-date">5月18日 星期日</div>
+        <div class="unlock-hint">【 👆 向上滑动 或 点击 🔓 解锁手机 】</div>
+    </div>
+</div>
 
-        // ================= 3. 高精度网络时间同步引擎 (防作弊核心) =================
-        let timeOffset = 0; // 本地时间与真实网络时间的差值（毫秒）
-        
-        async function syncRealTime() {
-            try {
-                // 去获取真实的北京时间
-                const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Shanghai');
-                const data = await response.json();
-                const realTime = new Date(data.datetime).getTime();
-                const localTime = new Date().getTime();
-                timeOffset = realTime - localTime; 
-                console.log('> 时间轴校准完成，当前偏移补偿:', timeOffset, 'ms');
-            } catch (error) {
-                console.log('> 网络时间源请求失败，暂时回退至本地时间引擎');
-            }
-        }
-        // 初始化时立即拉取一次网络时间
-        syncRealTime();
+<div class="slide-container" id="slide5">
+    <h2 class="slide-title">System.Accessing(<span>TARGET_QIAO</span>)</h2>
+    <div class="typewriter-text" style="font-size: 18px; color: #FF2D55;">
+        > INITIALIZING USER INTERFACE...<br>
+        > LOADING PERSONAL DATA PACKS...<br>
+        > DECRYPTING MEMORIES...
+    </div>
+</div>
 
-        // ================= 4. 核心倒计时与解锁逻辑 =================
-        // 强制锁定：2026年5月18日 00:00:00 (UTC+8 北京时间)
-        const TARGET_DATE = new Date('2026-05-18T00:00:00+08:00').getTime();
-        
-        const countdownEl = document.getElementById('countdown-timer');
-        const btnGateway = document.getElementById('btn-gateway');
-        const radar = document.getElementById('radar');
-        const mainTitle = document.getElementById('main-title');
+<div class="slide-container" id="slide6" style="background: url('http://googleusercontent.com/image_collection/image_retrieval/12171466602651404739') center/cover;">
+    <div class="phone-mockup" style="background: rgba(0,0,0,0.3); backdrop-filter: blur(20px);">
+        <div class="status-bar"></div>
+        <div class="app-grid">
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/15877754711419349460" class="app-icon">
+                <div class="notification-badge">1</div>
+                <div class="app-name">网易云</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/4145298834657040676" class="app-icon">
+                <div class="notification-badge">999+</div>
+                <div class="app-name">微信</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/270734683550026182" class="app-icon">
+                <div class="notification-badge">99+</div>
+                <div class="app-name">QQ</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/1238775266878307913" class="app-icon">
+                <div class="notification-badge">1</div>
+                <div class="app-name">学习通</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/2417221372281840612" class="app-icon">
+                <div class="notification-badge">1</div>
+                <div class="app-name">王者荣耀</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <img src="http://googleusercontent.com/image_collection/image_retrieval/16685934182899621420" class="app-icon">
+                <div class="notification-badge">1</div>
+                <div class="app-name">Steam</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <div class="app-icon blurred" style="background: #333;"></div>
+                <div class="app-name">相机</div>
+            </div>
+            <div class="app-icon-wrapper">
+                <div class="app-icon blurred" style="background: #333;"></div>
+                <div class="app-name">设置</div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function formatNumber(num) {
-            return num < 10 ? '0' + num : num;
-        }
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">Notification Surge</h2>
+    <div style="display: flex; gap: 60px; align-items: center;">
+        <div class="highlight-number">999+</div>
+        <div style="max-width: 400px;">
+            <h3 style="color: #fff; font-size: 32px;">Messages Pending</h3>
+            <p style="color: #888; font-size: 18px;">每个数字背后，都是一次想要跨越 1800 公里的心跳。微信小红点里，藏着尚未说出口的第 520 句喜欢。</p>
+        </div>
+    </div>
+</div>
 
-        function updateCountdown() {
-            // 获取当前时间 + 服务器时间偏移量（杜绝改手机时间的作弊行为）
-            const now = new Date().getTime() + timeOffset;
-            const distance = TARGET_DATE - now;
+<div class="slide-container" id="slide8">
+    <h2 class="slide-title">Shared Frequency</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 80%;">
+        <div style="background: #111; padding: 40px; border-radius: 20px; border: 1px solid #333;">
+            <img src="http://googleusercontent.com/image_collection/image_retrieval/15877754711419349460" style="width: 80px; border-radius: 15px;">
+            <p style="color: #fff; margin-top: 20px; font-size: 20px;">“正在邀请你一起听...”</p>
+            <p style="color: #FF2D55; font-size: 14px;">STATUS: ACTIVE</p>
+        </div>
+        <div style="padding: 20px; color: #fff;">
+            <h3>Audio Connection</h3>
+            <p>在不同经纬度的耳机里，流淌着同一首旋律。网易云的红点，是跨越千里的共鸣信号。</p>
+        </div>
+    </div>
+</div>
 
-            if (distance > 0) {
-                // 时间未到，计算倒计时
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+<div class="slide-container" id="slide9">
+    <h2 class="slide-title">System Metrics</h2>
+    <div class="table-layout" style="width: 80%;">
+        <table>
+            <thead>
+                <tr>
+                    <th>PARAMETER</th>
+                    <th>VALUE</th>
+                    <th>UNIT</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Origins</td>
+                    <td>Jiaozuo, Henan</td>
+                    <td>Coordinate A</td>
+                </tr>
+                <tr>
+                    <td>Destination</td>
+                    <td>Beihai, Guangxi</td>
+                    <td>Coordinate B</td>
+                </tr>
+                <tr>
+                    <td>Logic Gap</td>
+                    <td>1,800.00</td>
+                    <td>Kilometers</td>
+                </tr>
+                <tr>
+                    <td>Latency</td>
+                    <td>0.00</td>
+                    <td>ms (Real-time Heartbeat)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-                countdownEl.innerHTML = `
-                    ${formatNumber(days)}<span>D</span>
-                    ${formatNumber(hours)}<span>H</span>
-                    ${formatNumber(minutes)}<span>M</span>
-                    ${formatNumber(seconds)}<span>S</span>
-                `;
-            } else {
-                // 时间已到，触发高光解锁状态
-                if(!isUnlocked) {
-                    isUnlocked = true;
-                    
-                    // UI 状态全面跃迁
-                    countdownEl.innerHTML = "00<span>D</span>00<span>H</span>00<span>M</span>00<span>S</span>";
-                    countdownEl.style.color = "#ff00aa";
-                    countdownEl.style.textShadow = "0 0 15px rgba(255, 0, 170, 0.6)";
-                    
-                    mainTitle.innerText = "DECRYPTION_SUCCESS";
-                    mainTitle.style.color = "#ff00aa";
-                    
-                    textElement.innerHTML = "> 信号解析完成。<br>> 郑巧，生日快乐。系统大门已为你敞开。";
-                    textElement.style.borderLeftColor = "#ff00aa";
-                    
-                    radar.classList.add('unlocked');
-                    
-                    btnGateway.innerText = "[ 接入 Qiao_OS 核心网络 ]";
-                    btnGateway.classList.add('unlocked');
-                }
-            }
-        }
+<div class="slide-container" id="slide10">
+    <h2 class="slide-title">Transmission Path</h2>
+    <div class="timeline-line">
+        <div class="timeline-dot" style="left: 0;"></div>
+        <div class="timeline-dot" style="left: 50%;"></div>
+        <div class="timeline-dot" style="left: 100%;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; width: 80%; color: #888;">
+        <div>焦作 (Home)</div>
+        <div>1800km Crossing</div>
+        <div>北海 (You)</div>
+    </div>
+</div>
 
-        // 每秒刷新时钟，保持高频更新
-        setInterval(updateCountdown, 1000);
-        updateCountdown();
+<div class="slide-container" id="slide11">
+    <h2 class="slide-title">Inviting Victory</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 80%;">
+        <div style="background: #111; padding: 20px; border-radius: 15px; text-align: center;">
+            <i class="fa-solid fa-trophy" style="color: #FFD700; font-size: 40px;"></i>
+            <h3 style="color: #fff;">Ranked</h3>
+            <p style="color: #666;">陪你登顶王者</p>
+        </div>
+        <div style="background: #111; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #FF2D55;">
+            <i class="fa-solid fa-gamepad" style="color: #FF2D55; font-size: 40px;"></i>
+            <h3 style="color: #fff;">1 Invite</h3>
+            <p style="color: #666;">专属组队申请</p>
+        </div>
+        <div style="background: #111; padding: 20px; border-radius: 15px; text-align: center;">
+            <i class="fa-solid fa-shield-heart" style="color: #FF2D55; font-size: 40px;"></i>
+            <h3 style="color: #fff;">Support</h3>
+            <p style="color: #666;">永远在你身后</p>
+        </div>
+    </div>
+</div>
 
-    </script>
+<div class="slide-container" id="slide12">
+    <div style="text-align: center; max-width: 900px;">
+        <i class="fa-solid fa-quote-left" style="color: #FF2D55; font-size: 60px; margin-bottom: 30px;"></i>
+        <blockquote style="font-size: 36px; color: #fff; line-height: 1.4; font-weight: 300;">
+            这部手机里没有祝福语，因为每一个红点，都是我不敢轻易点击的思念。
+        </blockquote>
+        <cite style="color: #FF2D55; font-size: 20px; display: block; margin-top: 30px;">— FROM: 1800KM AWAY</cite>
+    </div>
+</div>
+
+<script>
+    // Minimal logic for the red dot elimination demo
+    document.querySelectorAll('.app-icon-wrapper').forEach(app => {
+        app.addEventListener('click', function() {
+            const badge = this.querySelector('.notification-badge');
+            if (badge) badge.style.display = 'none';
+        });
+    });
+
+    // Simple fade transition for slides (demo purpose)
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide-container');
+    slides.forEach((s, i) => { if(i !== 0) s.style.display = 'none'; });
+
+    document.body.addEventListener('click', () => {
+        slides[currentSlide].style.display = 'none';
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].style.display = 'flex';
+    });
+</script>
+
 </body>
 </html>
-
 
 ```
