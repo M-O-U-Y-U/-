@@ -82,10 +82,10 @@
 
         <!-- 随机浮现的情话/线索 -->
         <div class="dynamic-text" id="dynamic-text">
-            > 正在初始化...
+            > 正在与世界时间服务器进行高精度同步...
         </div>
 
-        <!-- 通往主系统的传送门 -->
+        <!-- 通往主系统的传送门（填入你主站的真实链接） -->
         <a href="https://for-qiao.pages.dev" class="btn-gateway" id="btn-gateway">
             [ 权限锁定 | AWAITING 05.18 ]
         </a>
@@ -117,41 +117,58 @@
         ];
         const textElement = document.getElementById('dynamic-text');
         let msgIndex = 0;
+        let isUnlocked = false;
 
         function changeMessage() {
-            // 如果已经解锁，停止轮播
             if(isUnlocked) return;
             textElement.style.opacity = 0;
             setTimeout(() => {
                 textElement.innerText = messages[msgIndex];
                 textElement.style.opacity = 1;
                 msgIndex = (msgIndex + 1) % messages.length;
-            }, 500); // 配合 CSS 可以做淡入淡出，这里用简单的替换
+            }, 500); 
         }
         setInterval(changeMessage, 4500);
-        changeMessage();
 
-        // ================= 3. 核心倒计时与解锁逻辑 =================
-        // 设定解锁目标时间：2026年5月18日 00:00:00
-        const TARGET_DATE = new Date('2026-05-18T00:00:00').getTime();
+        // ================= 3. 高精度网络时间同步引擎 (防作弊核心) =================
+        let timeOffset = 0; // 本地时间与真实网络时间的差值（毫秒）
+        
+        async function syncRealTime() {
+            try {
+                // 去获取真实的北京时间
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Asia/Shanghai');
+                const data = await response.json();
+                const realTime = new Date(data.datetime).getTime();
+                const localTime = new Date().getTime();
+                timeOffset = realTime - localTime; 
+                console.log('> 时间轴校准完成，当前偏移补偿:', timeOffset, 'ms');
+            } catch (error) {
+                console.log('> 网络时间源请求失败，暂时回退至本地时间引擎');
+            }
+        }
+        // 初始化时立即拉取一次网络时间
+        syncRealTime();
+
+        // ================= 4. 核心倒计时与解锁逻辑 =================
+        // 强制锁定：2026年5月18日 00:00:00 (UTC+8 北京时间)
+        const TARGET_DATE = new Date('2026-05-18T00:00:00+08:00').getTime();
         
         const countdownEl = document.getElementById('countdown-timer');
         const btnGateway = document.getElementById('btn-gateway');
         const radar = document.getElementById('radar');
         const mainTitle = document.getElementById('main-title');
-        
-        let isUnlocked = false;
 
         function formatNumber(num) {
             return num < 10 ? '0' + num : num;
         }
 
         function updateCountdown() {
-            const now = new Date().getTime();
+            // 获取当前时间 + 服务器时间偏移量（杜绝改手机时间的作弊行为）
+            const now = new Date().getTime() + timeOffset;
             const distance = TARGET_DATE - now;
 
             if (distance > 0) {
-                // 时间未到，计算时分秒
+                // 时间未到，计算倒计时
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -164,11 +181,11 @@
                     ${formatNumber(seconds)}<span>S</span>
                 `;
             } else {
-                // 时间已到，触发解锁状态！
+                // 时间已到，触发高光解锁状态
                 if(!isUnlocked) {
                     isUnlocked = true;
                     
-                    // UI 状态大逆转
+                    // UI 状态全面跃迁
                     countdownEl.innerHTML = "00<span>D</span>00<span>H</span>00<span>M</span>00<span>S</span>";
                     countdownEl.style.color = "#ff00aa";
                     countdownEl.style.textShadow = "0 0 15px rgba(255, 0, 170, 0.6)";
@@ -187,7 +204,7 @@
             }
         }
 
-        // 每秒刷新倒计时
+        // 每秒刷新时钟，保持高频更新
         setInterval(updateCountdown, 1000);
         updateCountdown();
 
