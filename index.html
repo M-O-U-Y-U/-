@@ -55,6 +55,30 @@
         .btn-gateway.unlocked { border: 2px solid #ff00aa; color: #fff; background: rgba(255, 0, 170, 0.15); box-shadow: 0 0 20px rgba(255, 0, 170, 0.5); pointer-events: auto; cursor: pointer; }
         .btn-gateway.unlocked:hover, .btn-gateway.unlocked:active { background: #ff00aa; box-shadow: 0 0 30px #ff00aa; transform: scale(1.05); }
 
+        /* ================= 秘钥验证模态框 ================= */
+        .auth-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 2000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .auth-modal.show { opacity: 1; pointer-events: auto; }
+        .auth-box { background: rgba(10, 10, 10, 0.95); border: 1px solid #00e5ff; padding: 30px 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 0 30px rgba(0, 229, 255, 0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: scale(0.8); }
+        .auth-modal.show .auth-box { transform: scale(1); }
+        
+        .auth-title { color: #00e5ff; font-size: 1.2rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
+        .auth-desc { color: #aaa; font-size: 0.85rem; margin-bottom: 25px; }
+        
+        .auth-input { width: 100%; background: transparent; border: none; border-bottom: 2px solid #555; color: #ff00aa; font-family: 'Courier New', Courier, monospace; font-size: 1.2rem; text-align: center; padding: 10px; margin-bottom: 10px; outline: none; transition: border-color 0.3s; }
+        .auth-input:focus { border-bottom-color: #ff00aa; box-shadow: 0 5px 15px -5px rgba(255,0,170,0.3); }
+        .auth-input::placeholder { color: #444; font-size: 1rem; }
+        
+        .auth-error { color: #ff3b30; font-size: 0.8rem; height: 20px; margin-bottom: 20px; font-weight: bold; transition: color 0.3s; }
+        
+        .auth-actions { display: flex; justify-content: space-between; gap: 15px; }
+        .auth-btn { flex: 1; background: transparent; border: 1px solid #555; color: #aaa; padding: 12px; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+        .auth-btn.verify { border-color: #00e5ff; color: #00e5ff; }
+        .auth-btn.verify:hover, .auth-btn.verify:active { background: rgba(0, 229, 255, 0.2); box-shadow: 0 0 15px rgba(0, 229, 255, 0.4); color: #fff; }
+        .auth-btn.cancel:hover, .auth-btn.cancel:active { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+        .shake-box { animation: shakeAuth 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff3b30; box-shadow: 0 0 30px rgba(255,59,48,0.3); }
+        @keyframes shakeAuth { 10%, 90% { transform: translate3d(-3px, 0, 0); } 20%, 80% { transform: translate3d(6px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-8px, 0, 0); } 40%, 60% { transform: translate3d(8px, 0, 0); } }
+
     </style>
 </head>
 <body>
@@ -84,11 +108,25 @@
             > 正在与世界时间服务器建立安全握手...
         </div>
 
-        <!-- 通往主系统的传送门（填入你主站的真实链接） -->
-        <a href="https://for-qiao.pages.dev" class="btn-gateway" id="btn-gateway">
+        <!-- 通往主系统的传送门（触发验证模态框） -->
+        <div class="btn-gateway" id="btn-gateway" onclick="openAuthModal()">
             [ 权限锁定 | AWAITING 05.18 ]
-        </a>
+        </div>
 
+    </div>
+
+    <!-- 秘钥安全验证层 -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-box" id="auth-box">
+            <div class="auth-title">SYSTEM_AUTH_REQUIRED</div>
+            <p class="auth-desc">即将连接至 Qiao_OS，请输入高级访问秘钥：</p>
+            <input type="password" id="auth-input" class="auth-input" placeholder="Secret Key..." autocomplete="off">
+            <div id="auth-error" class="auth-error"></div>
+            <div class="auth-actions">
+                <button class="auth-btn cancel" onclick="closeAuthModal()">[ 终端断开 ]</button>
+                <button class="auth-btn verify" onclick="verifyKey()">[ 授权接入 ]</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -180,7 +218,6 @@
             const distance = TARGET_DATE - now;
 
             if (distance > 0) {
-                // 时间未到，显示倒计时
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -197,7 +234,6 @@
                 if(!isUnlocked) {
                     isUnlocked = true;
                     
-                    // UI 状态全面跃迁
                     countdownEl.innerHTML = "00<span>D</span>00<span>H</span>00<span>M</span>00<span>S</span>";
                     countdownEl.style.color = "#ff00aa";
                     countdownEl.style.textShadow = "0 0 15px rgba(255, 0, 170, 0.6)";
@@ -220,9 +256,63 @@
             }
         }
 
-        // 以高帧率每秒更新时间引擎
         setInterval(updateCountdown, 1000);
         updateCountdown();
+
+        // ================= 5. 秘钥验证安全系统 =================
+        const authInput = document.getElementById('auth-input');
+        const authError = document.getElementById('auth-error');
+        const authBox = document.getElementById('auth-box');
+
+        function openAuthModal() {
+            if(isUnlocked) {
+                document.getElementById('auth-modal').classList.add('show');
+                authInput.value = '';
+                authError.innerText = '';
+                authBox.classList.remove('shake-box');
+                // 延迟使输入框自动聚焦，提升体验
+                setTimeout(() => authInput.focus(), 300);
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.remove('show');
+        }
+
+        function verifyKey() {
+            const key = authInput.value.trim();
+            
+            if(key === '518zhengqiao520') {
+                // 秘钥正确
+                authBox.classList.remove('shake-box');
+                authError.style.color = '#00ff00';
+                authError.innerText = '> 秘钥验证成功，正在重定向...';
+                
+                // 延迟1秒给足仪式感后跳转到主系统
+                setTimeout(() => {
+                    window.location.href = 'https://for-qiao.pages.dev';
+                }, 1000);
+            } else {
+                // 秘钥错误
+                authError.style.color = '#ff3b30';
+                authError.innerText = '> [ERROR] 秘钥无效，访问拒绝';
+                
+                // 重置震动动画以允许重复触发
+                authBox.classList.remove('shake-box');
+                void authBox.offsetWidth; 
+                authBox.classList.add('shake-box');
+                
+                authInput.value = '';
+                authInput.focus();
+            }
+        }
+
+        // 监听回车键快捷验证
+        authInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                verifyKey();
+            }
+        });
 
     </script>
 </body>
